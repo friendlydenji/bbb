@@ -14,5 +14,6 @@ struct ioctl_param {
 
 #define IOCTL_VAL_MAXNR     2
 #define DEVICE_NAME         "ioctl_chrdev"
+#define DEVICE_PATH 	    "/dev/ioctl_chrdev"
 
 #endif /* __IOCTL_H__ */

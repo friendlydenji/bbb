@@ -22,16 +22,16 @@ enum {
 
 static atomic_t device_already_opened = ATOMIC_INIT(DEVICE_NOT_OPEN);
 
-static int ioctl_driver_major;
+static int ioctl_driver_major = 0;
 static int ioctl_driver_minor;
-static int number_of_device;
+static int number_of_device = 1;
 static dev_t devno;
 static struct cdev ioctl_driver_cdev;
 static struct device *device;
 static struct class *cls;
 
-static char msg[BUF_LEN + 1];
-static int msg_len;
+static char msg[BUF_LEN + 1] = "init msg\n";
+static int msg_len = sizeof("init msg\n");
 
 static int ioctl_chrdev_open(struct inode *inode, struct file *filp)
 {
@@ -71,7 +71,7 @@ static ssize_t ioctl_chrdev_read(struct file *filp, char __user *buffer, size_t 
         ++ bytes_read;
     }
 
-    pr_info("ioctl_chrdev_read: read %d bytes, %ld left\n", bytes_read, length);
+    pr_info("ioctl_chrdev_read: read %d bytes, %u left\n", bytes_read, length);
 
     *offset += bytes_read;
 
@@ -121,7 +121,8 @@ static long ioctl_chrdev_ioctl(struct file *filp, unsigned int ioctl_command, un
         pr_err("ioctl_chrdev_ioctl: device currently ioctl-ed by other process");
         return -EBUSY;
     }
-
+	
+    loff_t offset;
     switch (ioctl_command) {
         case IOCTL_SET_MSG:
             char __user *tmp = (char __user *)ioctl_param;
@@ -132,11 +133,12 @@ static long ioctl_chrdev_ioctl(struct file *filp, unsigned int ioctl_command, un
                 get_user(ch, tmp);
             }
             
-            ioctl_chrdev_write(filp, (char __user *)ioctl_param, i, NULL);
+	    offset = 0;
+            ioctl_chrdev_write(filp, (char __user *)ioctl_param, i, &offset);
             pr_info("ioctl_chrdev_ioctl: IOCTL_SET_MSG succeed\n");
             break;
         case IOCTL_GET_MSG:
-            loff_t offset = 0;    
+            offset = 0;    
             
             i = ioctl_chrdev_read(filp, (char __user *)ioctl_param, BUF_LEN, &offset);
             
@@ -207,7 +209,7 @@ static int __init ioctl_chrdev_init(void)
         goto err_class_destroy;
     }
 
-    pr_info("ioctl_chrdev_init: device created at /dev/%s", DEVICE_NAME);
+    pr_info("ioctl_chrdev_init: device created at /dev/%s\n", DEVICE_NAME);
     return 0;
 err_class_destroy:
     if (!IS_ERR_OR_NULL(cls)) {
