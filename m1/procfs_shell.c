@@ -10,7 +10,7 @@
 
 #define PROCFS_FILE_NAME "iteration"
 
-static void *file_seq_start(struct seq_file *seq, loff_t *offset)
+static void *proc_seq_start(struct seq_file *seq, loff_t *offset)
 {
 	static unsigned long counter = 0;
 	
@@ -22,7 +22,7 @@ static void *file_seq_start(struct seq_file *seq, loff_t *offset)
 	return NULL;
 }
 
-static void *file_seq_next(struct seq_file *seq, void *iter, loff_t *offset)
+static void *proc_seq_next(struct seq_file *seq, void *iter, loff_t *offset)
 {
 	unsigned long *curr_iter = (unsigned long *)iter;
 	(*curr_iter)++;
@@ -30,12 +30,12 @@ static void *file_seq_next(struct seq_file *seq, void *iter, loff_t *offset)
 	return NULL;
 }
 
-static void file_seq_stop(struct seq_file *seq, void* iter)
+static void proc_seq_stop(struct seq_file *seq, void* iter)
 {
 	/* do nothing */
 }
 
-static int file_seq_show(struct seq_file *seq, void* iter)
+static int proc_seq_show(struct seq_file *seq, void* iter)
 {
 	loff_t *offset = (loff_t *)iter;
 
@@ -43,31 +43,31 @@ static int file_seq_show(struct seq_file *seq, void* iter)
 	return 0;
 }
 
-static struct seq_operations file_seq_ops = {
-	.start = file_seq_start,
-	.next = file_seq_next,
-	.show = file_seq_show,
-	.stop = file_seq_stop,
+static struct seq_operations procfs_file_seq_ops = {
+	.start = proc_seq_start,
+	.next = proc_seq_next,
+	.show = proc_seq_show,
+	.stop = proc_seq_stop,
 };
 
-static int file_open(struct inode *inode, struct file * file)
+static int procfs_file_open(struct inode *inode, struct file * file)
 {
-	return seq_open(file, &file_seq_ops);
+	return seq_open(file, &procfs_file_seq_ops);
 }
 
 #ifdef HAVE_PROC_OPS
-static const struct proc_ops file_ops = {
-	.proc_open = file_open,
+static const struct proc_ops procfs_file_ops = {
+	.proc_open = procfs_file_open,
 	.proc_read = seq_read,
 	.proc_lseek = seq_lseek,
 	.proc_release = seq_release,
 };
 #else
-static const struct file_operations file_ops = {
-	.open = file_open,
-        .read = seq_read,
-        .llseek = seq_lseek,
-        .release = seq_release,
+static const struct file_operations procfs_file_ops = {
+	.open = procfs_file_open,
+	.read = seq_read,
+	.llseek = seq_lseek,
+	.release = seq_release,
 };
 #endif
 
@@ -75,7 +75,7 @@ static int __init procfs_file_init(void)
 {
 	struct proc_dir_entry *entry;
 
-	entry = proc_create(PROCFS_FILE_NAME, 0, NULL, &file_ops);
+	entry = proc_create(PROCFS_FILE_NAME, 0, NULL, &procfs_file_ops);
 	if (entry == NULL) {
 		pr_err("procfs_file_init: procfs file create failed");
 		return -ENOMEM;
@@ -95,6 +95,6 @@ module_init(procfs_file_init);
 module_exit(procfs_file_exit);
 
 MODULE_AUTHOR("godminhtri");
-MODULE_DESCRIPTION("procfs file");
+MODULE_DESCRIPTION("procfs file shell");
 MODULE_LICENSE("GPL");
 
