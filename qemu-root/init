@@ -1,0 +1,22 @@
+#!/bin/sh
+
+export PATH=/bin
+
+# Mount các filesystem cần thiết
+busybox mount -t proc proc /proc
+busybox mount -t sysfs sysfs /sys
+busybox mount -t devtmpfs devtmpfs /dev
+
+echo "=== QEMU Linux ready ==="
+
+busybox mount -t tracefs tracefs /sys/kernel/tracing
+
+# Load module
+busybox insmod /simple_module.ko
+
+# Kiểm tra kernel log
+busybox dmesg | busybox tail -n 20
+
+# Giữ shell để tương tác
+exec setsid cttyhack /bin/sh
+
