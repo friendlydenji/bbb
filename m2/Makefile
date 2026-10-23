@@ -1,25 +1,31 @@
-obj-m:=ioctl_chrdev.o
 
-KDIR := /lib/modules/$(shell uname -r)/build
-PWD := $(shell pwd)
+ifneq ($(KERNELRELEASE),)
 
-CC := gcc
-CFLAGS := -Wall -Wextra -O2
+# Kernel build
+obj-m := ioctl_chrdev.o
+
+else
+
+# Userspace build
+KDIR ?= /lib/modules/$(shell uname -r)/build
+
+USER_CC := gcc
+USER_CFLAGS := -Wall -Wextra -O2
 
 .PHONY: all kernel user clean
-
 
 all: kernel user
 
 kernel:
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
+	$(MAKE) -C $(KDIR) M=$(CURDIR) modules
 
 user: userspace_ioctl
 
 userspace_ioctl: userspace_ioctl.c ioctl.h
-	$(CC) $(CFLAGS) -o $@ userspace_ioctl.c
+	$(USER_CC) $(USER_CFLAGS) -o $@ $<
 
 clean:
-	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	$(MAKE) -C $(KDIR) M=$(CURDIR) clean
 	$(RM) userspace_ioctl
 
+endif
