@@ -1,7 +1,26 @@
 # bbb
-The nth time I restart the BBB linux embedded study. Hope this time kill this board.
+the nth time I restart the BBB embedded linux study
 
-## Progress
-m0: simple driver \
-m1: a normal driver and some "shell" module that currently only for know how to use (including procfs, sysfs, debugfs, ioctl) \
-m2: ioctl char device driver and its user space application (including synchronous version which device file can be accessed by only once at a moment and asynchronous version that device file can be accessed by several application at the same time)
+## current flow
+b0 -> b1 -> b2 -> b3
+
+## progress
+
+### basic lkmpg
+b0: simple driver \
+b1: a normal driver and some "shell" module that currently only for know how to use (including procfs, sysfs, debugfs, ioctl) \
+b2: pseudo ioctl character device driver and its user space application \
+b3: syscall probe/ kernel module 
+
+### lkmpg & device driver
+d0: gpio \
+d1: sensor \
+d2: usb \
+d3: pci ethernet \
+d4: usb ethernet 
+
+### lkmpg & system programming
+s1: multiplexed i/o in kernel module and application \
+s2: advance i/o in kernel module and application \
+
+
