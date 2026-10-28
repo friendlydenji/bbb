@@ -1,26 +1,8 @@
-# bbb
-the nth time I restart the BBB embedded linux study
+# Learn comprehensive linux with Beaglebone Black (hardware branch)
 
-## current flow
-b0 -> b1 -> b2 -> b3
-
-## progress
-
-### basic lkmpg
-b0: simple driver \
-b1: a normal driver and some "shell" module that currently only for know how to use (including procfs, sysfs, debugfs, ioctl) \
-b2: pseudo ioctl character device driver and its user space application \
-b3: syscall probe/ kernel module 
-
-### lkmpg & device driver
-d0: gpio \
-d1: sensor \
-d2: usb \
-d3: pci ethernet \
-d4: usb ethernet 
-
-### lkmpg & system programming
-s1: multiplexed i/o in kernel module and application \
-s2: advance i/o in kernel module and application \
-
-
+## Project tree
+### [Basice LKMPG](basic/README.md)
+- [x] b0: [Simple driver](basic/b0/README.md)
+- [x] b1: [A normal driver and some "shell" module that currently only for know how to use (including procfs, sysfs, debugfs, ioctl)](basic/b1/README.md)
+- [x] b2: [Pseudo ioctl character device driver and its user space application](basic/b2/README.md)
+- [ ] b3: [Syscall probe/ kernel module](basic/b3/README.md)
