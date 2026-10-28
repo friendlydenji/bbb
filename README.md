@@ -28,15 +28,18 @@ This is the nth time I've restarted the Beaglebone Black embedded Linux study an
 - For Linux kernel module and Linux system programming, we can both test them on Beaglebone Black or QEMU.
 - For device driver, we will test on the real hardware bbb for sure.
   
+## Progress
+- At this time, we have 3 main branches that ***bbb*** for test on the hardware, ***qemux86*** for test on qemu and ***debug*** for adding trace information for the test.
+
 ### Basic LKMPG
-- [x] b0: simple driver 
-- [x] b1: a normal driver and some "shell" module that currently only for know how to use (including procfs, sysfs, debugfs, ioctl) 
-- [x] b2: pseudo ioctl character device driver and its user space application 
-- [ ] b3: syscall probe/ kernel module 
+- [x] b0: Simple driver 
+- [x] b1: A normal driver and some "shell" module that currently only for know how to use (including procfs, sysfs, debugfs, ioctl) 
+- [x] b2: Pseudo ioctl character device driver and its user space application 
+- [ ] b3: Syscall probe/ kernel module 
 
 ### LKMPG & Device driver
 - [ ] d0: GPIO
-- [ ] d1: sensor
+- [ ] d1: Sensor
 - [ ] d2: USB driver
 - [ ] d3: PCI Ethernet driver
 - [ ] d4: USB Ethernet driver
