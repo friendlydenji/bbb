@@ -15,14 +15,32 @@
 
 #include <asm/errno.h>
 
+#define DEVICE_NUM              4
+#define DEVICE_NAME_PREFIX      "user_leds_"
+
 static struct device device;
 static struct device_node *device_node;
-static struct gpio_desc *led;
+static struct gpio_desc *led[DEVICE_NUM];
 
-static void 
+static struct gpiod_lookup_table leds_gpio_table = {
+	.dev_id = DEVICE_NAME_PREFIX,
+	.table = {
+		GPIO_LOOKUP("gpiochip0", 21, "user_led_0", GPIO_ACTIVE_HIGH),
+		GPIO_LOOKUP("gpiochip0", 22, "user_led_1", GPIO_ACTIVE_HIGH),
+		GPIO_LOOKUP("gpiochip0", 23, "user_led_2", GPIO_ACTIVE_HIGH),
+		GPIO_LOOKUP("gpiochip0", 24, "user_led_3", GPIO_ACTIVE_HIGH),
+		{ }   
+	},
+};
 
 static int device_open(struct inode *inode, struct file *filp) 
 {
+    int led_index = iminor(inode) - led_device.minor;   
+
+    if (led_index < 0 || led_index >= DEVICE_NUM)
+        return -ENODEV;
+
+    filp->private_data = (void *)(uintptr_t)led_index;  
     return 0;
 }
 
@@ -151,8 +169,6 @@ static int __init device_init(void)
 
     int i = 0;
     for (i = 0; i < DEVICE_NUM; ++ i) {
-        char device_name[11];
-        sprintf(device_name, "%s%c", DEVICE_NAME_PREFIX, (char)i + '0');
         led_device.device[i] = device_create(led_device.class, NULL, led_device.devno, NULL, device_name);
         if (IS_ERR(led_device.device[i])) {
             retval = PTR_ERR(led_device.device[i]);
@@ -163,35 +179,25 @@ static int __init device_init(void)
 
     pr_info("device_init: device created at /dev/%s\n", DEVICE_NAME);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 10, 0)
-    retval = gpio_request(led_gpio, led_label);
-#else
-    retval = gpio_request(leds[0].gpio, leds[0].label);
-#endif
-    if (retval) {
-        pr_err("device_init: gpio_request failed %d\n", retval);
-        goto err_device_destroy;
-    }
+    gpiod_add_lookup_table(&leds_gpio_table);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 10, 0)
-    retval = gpio_direction_output(led_gpio, led_flags);
-#else
-    retval = gpio_direction_output(leds[0].gpio, leds[0].flags);
-#endif
-
-    if (retval) {
-        pr_err("device_init: gpio_direction_output failed %d\n", retval);
-        goto err_gpio_free;
+    for (i = 0; i < DEVICE_NUM; ++ i) {
+        char device_name[12];
+        sprintf(device_name, "%s%c", DEVICE_NAME_PREFIX, (char)i + '0');
+        led[i] = gpiod_get(&led_device.device[i], "device_name", GPIOD_OUT_LOW);
+        if (IS_ERR(led)) {
+            retval = PTR_ERR(led[i]);
+            pr_err("device_init: gpiod_get %d failed %d\n", i, retval);
+            goto err_gpio_put;
+        }
     }
+    
 
     return 0;
 
-err_gpio_free:
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 10, 0)
-    gpio_free(led_gpio);
-#else
-    gpio_free(leds[0].gpio);
-#endif
+err_gpio_put:
+	gpiod_put(led);
+
 err_device_destroy:
     for (; i >=0 ; -- i) {
         device_destroy(led_device.class, led_device.devno + i);
